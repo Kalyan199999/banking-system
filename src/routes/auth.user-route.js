@@ -15,7 +15,7 @@ const {
 
 const route = express.Router();
 
-Router.get( '' , (req,res)=>{
+Router.get( '/' , (req,res)=>{
     return res.status(200).json({
         ok:true,
         message:"Welcome to the backend banking system.Try differnet end points!"
