@@ -12,6 +12,13 @@ app.use( cors() );
 
 app.use( '/api/user/' , userRoute );
 
+userRoute.get( '/' , (req,res)=>{
+    return res.status(200).json({
+        ok:true,
+        message:"Welcome to the backend banking system.Try differnet end points!"
+    })
+})
+
 const port = process.env.PORT
 
 // app.listen(port , ()=>{
