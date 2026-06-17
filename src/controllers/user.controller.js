@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid");
+const crypto = require('crypto'); 
 
 const {
     generateHashPassword,
@@ -90,7 +90,7 @@ async function registration( request,response )
         }
 
         const hashPassword = generateHashPassword( password );
-        const id = uuidv4();
+        const id = crypto.randomUUID(); 
 
         const user = {
             id:id,
