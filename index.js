@@ -21,8 +21,8 @@ app.get( '/' , (req,res)=>{
 
 const port = process.env.PORT
 
-// app.listen(port , ()=>{
-//     console.log(`The server is started on the port:${port}`);
-// })
+app.listen(port , ()=>{
+    console.log(`The server is started on the port:${port}`);
+})
 
 module.exports = app;
