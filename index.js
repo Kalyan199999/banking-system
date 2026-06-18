@@ -3,7 +3,8 @@ const cookie = require('cookie-parser')
 const cors = require('cors')
 require('dotenv').config()
 
-const userRoute = require('./src/routes/auth.user-route.js')
+const userRoute = require('./src/routes/auth.user-route.js');
+const accountRoute = require('./src/routes/account-route.js');
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use( express.json() );
 app.use( cors() );
 
 app.use( '/api/user/' , userRoute );
+app.use( '/api/account' , accountRoute );
 
 app.get( '/' , (req,res)=>{
     return res.status(200).json({
