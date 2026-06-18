@@ -5,6 +5,7 @@ require('dotenv').config()
 
 const userRoute = require('./src/routes/auth.user-route.js');
 const accountRoute = require('./src/routes/account-route.js');
+const transcationRoute = require('./src/routes/transcations-route.js');
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use( cors() );
 
 app.use( '/api/user/' , userRoute );
 app.use( '/api/account' , accountRoute );
+app.use( '/api/transcation' , transcationRoute );
 
 app.get( '/' , (req,res)=>{
     return res.status(200).json({

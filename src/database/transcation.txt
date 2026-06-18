@@ -1,0 +1,28 @@
+create or replace function execute_money_transfer(
+  p_tx_id uuid,
+  p_sender_account_id uuid,
+  p_receiver_account_id uuid,
+  p_amount numeric
+) returns boolean as $$
+begin
+  -- Everything inside this function runs in a single transaction automatically.
+  -- If any query fails, the entire block rolls back.
+
+  -- 1. Insert Transaction
+  insert into public.transactions (id, from_user, to_user, amount, status)
+  values (p_tx_id, p_sender_account_id, p_receiver_account_id, p_amount, 'COMPLETED');
+
+  -- 2. Insert Debit entry (Negative amount)
+  insert into public.ledger_entries (account_id, amount, transaction_id, type)
+  values (p_sender_account_id, -p_amount, p_tx_id, 'DEBIT');
+
+  -- 3. Insert Credit entry (Positive amount)
+  insert into public.ledger_entries (account_id, amount, transaction_id, type)
+  values (p_receiver_account_id, p_amount, p_tx_id, 'CREDIT');
+
+  return true;
+exception when others then
+  -- Explicitly handles unexpected errors by aborting
+  raise exception 'Transfer failed and rolled back: %', sqlerrm;
+end;
+$$ language plpgsql security definer;

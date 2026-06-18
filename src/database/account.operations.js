@@ -61,7 +61,34 @@ async function fetchAccount(  user_id )
     }   
 }
 
+async function fetchBankAccount( conditionCol , value ) 
+{
+    try
+    {
+        const { data , error } = await supabase
+                                        .from('Accounts')
+                                        .select('id')
+                                        .eq( conditionCol , value )
+                                        .single();
+
+        if( error )
+        {
+            console.error(`Database fetch error (${conditionCol}):`, error.message);
+            
+            return false;
+        }
+
+        return data;
+    }
+    catch(error)
+    {
+        console.error("Catch block error:", error);
+        return false;
+    }
+}
+
 module.exports = {
     insertAccount,
-    fetchAccount
+    fetchAccount,
+    fetchBankAccount
 }
