@@ -5,7 +5,8 @@ const {
 } = require('../database/account.operations.js');
 
 const {
-    allOrNone
+    allOrNone,
+    fetchBalance
 } = require('../database/acid-property.js')
 
 async function addNewTranscation( request , response ) 
@@ -59,6 +60,16 @@ async function addNewTranscation( request , response )
             })
         }
 
+        const balance = await fetchBalance( sender.id );
+
+        if(  balance <=0 )
+        {
+            return response.status(200).json({
+                ok:true,
+                message:"Insufficient Balance!"
+            })
+        }
+
         const transaction_id = crypto.randomUUID();
 
         const payload = {
@@ -96,46 +107,45 @@ async function addNewTranscation( request , response )
     
 }
 
-module.exports = {
-    addNewTranscation
+
+async function getBalance(  request,response ) 
+{
+    try 
+    {
+        const { id:user_id } = request.user;
+
+        const account = await fetchBankAccount( 'user_id' , user_id );
+
+        if( !account )
+        {
+            return response.status(400).json({
+                ok:false,
+                message:"No Bank account is found for the user!"
+            })
+        }
+
+        const balance = await fetchBalance( account.id );
+
+        return response.status(200).json({
+            ok:true,
+            account,
+            balance
+        })
+
+    } 
+    catch (error) 
+    {
+        return response.status(500).json({
+            ok:false,
+            message:"Internal server issue!",
+            error:error.message
+        })
+    }
+    
 }
 
 
-
-// const transcationPayload = {
-//                 id:transaction_id,
-//                 from_user:sender,
-//                 to_user:receiver,
-//                 amount:numericAmount
-//         };
-
-//         const transactionData = await newTranscation( transcationPayload );
-
-//         const senderPayload = {
-//             account_id:sender,
-//             amount:numericAmount,
-//             transaction_id:transaction_id,
-//             type:"DEBIT"
-//         }
-
-//         const receiverPayload = {
-//             account_id:receiver,
-//             amount:numericAmount,
-//             transaction_id:transaction_id,
-//             type:"CREDIT"
-//         }
-
-//         const senderData = await addNewLedgerEntry( senderPayload );
-//         const receiverData = await addNewLedgerEntry( receiverPayload );
-
-//         if( !senderData || !receiverData)
-//         {
-//             return response.status(400).json({
-//                 ok:false,
-//                 message:"Transcation is Failed!"
-//             })
-//         }
-
-//         console.log(transactionData);
-//         console.log(senderData);
-//         console.log(receiverData);
+module.exports = {
+    addNewTranscation,
+    getBalance
+}

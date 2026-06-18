@@ -24,6 +24,42 @@ async function allOrNone( payload )
     }
 }
 
+async function fetchBalance( account_id ) 
+{
+    try 
+    {
+        const { data, error } = await supabase
+                                        .from('ledger')
+                                        .select('amount, type') // Fetch both amount and type
+                                        .eq('account_id', account_id)
+                                        .in('type', ['CREDIT', 'DEBIT', 'WITHDRAW']); // Matches ANY of these types
+
+        if( error )
+        {
+            console.log(error);
+            
+            return 0;
+        }
+
+        console.log(data);
+        
+        const balance = data.reduce( ( acc , record )=>{
+
+            return acc+record.amount
+        }  ,0 )
+
+        return balance;
+                                                            
+    } 
+    catch (error) 
+    {
+        console.log(error);
+        
+        return 0;
+    }   
+}
+
 module.exports = { 
-    allOrNone
+    allOrNone,
+    fetchBalance
 }
