@@ -66,9 +66,9 @@ async function addNewTranscation( request , response )
 
         const balance = await fetchBalance( sender.id );
 
-        if(  balance <=0 )
+        if(  balance <=0 || balance < numericAmount)
         {
-            return response.status(200).json({
+            return response.status(400).json({
                 ok:true,
                 message:"Insufficient Balance!"
             })
@@ -110,7 +110,6 @@ async function addNewTranscation( request , response )
     }
     
 }
-
 
 async function getBalance(  request,response ) 
 {
@@ -161,12 +160,11 @@ async function fetchUserTranscations( request, response )
             return response.status(400).json({
                 ok:false,
                 message:"User has no bank account!"
-            })
+            });
         }
 
         const ledgerEntries = await fetchLedgerTranscation( account.id  ) || [] ;
-       
- 
+        
         return response.status(200).json({
             ok:true,
             message:"Fetched all transcations!",
@@ -187,8 +185,6 @@ async function fetchUserTranscations( request, response )
         })
     }
 }
-
-
 
 module.exports = {
     addNewTranscation,
