@@ -9,6 +9,10 @@ const {
     fetchBalance
 } = require('../database/acid-property.js')
 
+const {
+    fetchLedgerTranscation
+} = require('../database/transcation.operations.js')
+
 async function addNewTranscation( request , response ) 
 {
     try
@@ -144,8 +148,50 @@ async function getBalance(  request,response )
     
 }
 
+async function fetchUserTranscations( request, response )
+{
+    try
+    {
+        const { id:user_id } = request.user;
+
+        const account = await fetchBankAccount( 'user_id' , user_id );
+
+        if( !account )
+        {
+            return response.status(400).json({
+                ok:false,
+                message:"User has no bank account!"
+            })
+        }
+
+        const ledgerEntries = await fetchLedgerTranscation( account.id  ) || [] ;
+       
+ 
+        return response.status(200).json({
+            ok:true,
+            message:"Fetched all transcations!",
+            data:{
+                account_id:account.id,
+                transcations:ledgerEntries
+            }
+        })
+    }
+    catch(error)
+    {
+        console.log(error);
+        
+        return response.status(500).json({
+            ok:false,
+            message:"Internal server issue!",
+            error:error.message
+        })
+    }
+}
+
+
 
 module.exports = {
     addNewTranscation,
-    getBalance
+    getBalance,
+    fetchUserTranscations
 }
