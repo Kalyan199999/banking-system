@@ -1,11 +1,11 @@
  const supabase = require('./config.js')
 
-async function allOrNone( payload ) 
+async function allOrNone( function_name, payload ) 
 {
     try 
     {
         // Call the database function to handle all inserts atomically
-        const { data, error } = await supabase.rpc('execute_money_transfer', payload );
+        const { data, error } = await supabase.rpc(function_name, payload );
 
         if (error) {
             
@@ -32,7 +32,7 @@ async function fetchBalance( account_id )
                                         .from('ledger')
                                         .select('amount, type') // Fetch both amount and type
                                         .eq('account_id', account_id)
-                                        .in('type', ['CREDIT', 'DEBIT', 'WITHDRAW']); // Matches ANY of these types
+                                        .in('type', ['CREDIT', 'DEBIT', 'WITHDRAW' ,'DEPOSIT']); // Matches ANY of these types
 
         if( error )
         {

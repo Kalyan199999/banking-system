@@ -13,7 +13,7 @@ const {
     fetchLedgerTranscation
 } = require('../database/transcation.operations.js')
 
-async function addNewTranscation( request , response ) 
+async function transferTranscation( request , response ) 
 {
     try
     {
@@ -83,7 +83,7 @@ async function addNewTranscation( request , response )
             p_amount: numericAmount
         }
 
-        const data = await allOrNone( payload );
+        const data = await allOrNone( 'execute_money_transfer' , payload );
 
         if( !data )
         {
@@ -107,6 +107,145 @@ async function addNewTranscation( request , response )
             message:"Internal server issue!",
             error:error.message
         })
+    }
+    
+}
+
+async function depositTranscation( request , response ) 
+{
+    console.log("initiated the deposit");
+
+    try
+    {
+        const { amount } = request.body;
+
+        const numericAmount = Number(amount.toString().trim());
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            return response.status(400).json({
+                ok: false,
+                message: "Invalid transaction amount!"
+            });
+        }
+
+        const { id:user_id } = request.user;
+        const account = await fetchBankAccount( 'user_id' , user_id );
+
+        if( !account || !account.id )
+        {
+            return response.status(400).json({
+                ok:false,
+                message:"User has no bank account!"
+            });
+        }
+
+        const transaction_id = crypto.randomUUID();
+
+         const payload = {
+            p_tx_id: transaction_id,
+            account_id:account.id,
+            p_amount: numericAmount
+        }
+
+        const data = await allOrNone( 'execute_money_deposit' , payload );
+
+        if( !data )
+        {
+            return response.status(400).json({
+                ok: false,
+                message: "Transaction failed safely without changes."
+            });
+        }
+        
+        return response.status(201).json({
+            ok:true,
+            message:"Transcation is completed!",
+            transaction_id
+        })
+
+    }
+    catch(error)
+    {
+        console.log('Error occured in deposit transcation:'+error.message);
+        
+        return response.status(500).json({
+            ok:false,
+            message:"Internal server issue!"
+        });
+    }
+    
+}
+
+async function withdrawTranscation( request , response ) 
+{
+    console.log("initiated the withdrawal");
+    try
+    {
+        const { amount } = request.body;
+
+        const numericAmount = Number(amount.toString().trim());
+        if (isNaN(numericAmount) || numericAmount <= 0) 
+        {
+            return response.status(400).json({
+                ok: false,
+                message: "Invalid transaction amount!"
+            });
+        }
+
+        const { id:user_id } = request.user;
+        const account = await fetchBankAccount( 'user_id' , user_id );
+
+        if( !account || !account.id )
+        {
+            return response.status(400).json({
+                ok:false,
+                message:"User has no bank account!"
+            });
+        }
+
+        const balance = await fetchBalance( account.id ) || 0;
+
+        if( balance <= 0 || balance < numericAmount )
+        {
+            return response.status(400).json({
+                ok:false,
+                message:"Insufficient balance to withdaw!",
+                balance
+            })
+        }
+
+        const transaction_id = crypto.randomUUID();
+
+         const payload = {
+            p_tx_id: transaction_id,
+            account_id:account.id,
+            p_amount: numericAmount
+        }
+
+        const data = await allOrNone( 'execute_money_withdraw' , payload );
+
+        if( !data )
+        {
+            return response.status(400).json({
+                ok: false,
+                message: "Transaction failed safely without changes."
+            });
+        }
+        
+        return response.status(201).json({
+            ok:true,
+            message:"Transcation is completed!",
+            transaction_id
+        })
+
+    }
+    catch(error)
+    {
+        console.log('Error occured in deposit transcation:'+error.message);
+        
+        return response.status(500).json({
+            ok:false,
+            message:"Internal server issue!"
+        });
     }
     
 }
@@ -187,7 +326,9 @@ async function fetchUserTranscations( request, response )
 }
 
 module.exports = {
-    addNewTranscation,
+    transferTranscation,
+    depositTranscation,
+    withdrawTranscation,
     getBalance,
     fetchUserTranscations
 }
