@@ -115,10 +115,11 @@ async function registration( request,response )
         const payload = {
             id:id,
             email:email,
-            mobile_number:mobile_number
+            mobile_number:mobile_number,
+            type:"refresh"
         }
-
-        const token = generateToken( payload , '1h' );
+        
+        const token = generateToken( payload , '7d' );
         
         return response.status(201).json({
             ok:true,
@@ -180,10 +181,11 @@ async function login( request,response )
             avatarPublicUrl = image.publicUrl;
         }
 
-         const payload = {
+        const payload = {
             id:user.id,
             email:user.email,
-            mobile_number:user.mobile_number
+            mobile_number:user.mobile_number,
+            type:"refresh"
         }
 
         const token = generateToken( payload , '1h' );
@@ -366,9 +368,56 @@ async function forgetPassword(request,response)
     }
 }
 
+async function generateAccessToken( request , response ) 
+{
+    try
+    {
+        const user = request.user;
+
+        if( !user )
+        {
+            return response.status(400).json({
+                ok:false,
+                message:"Invalid refresh token"
+            })
+        }
+
+        const payload = 
+        {
+            id:user.id,
+            email:user.email,
+            mobile_number:user.mobile_number,
+            type:"access"
+        }
+
+        const accessToken = generateToken( payload , '5m' );
+
+        payload.type = 'refresh';
+        const refreshToken = generateToken( payload , '7d' );
+        
+
+        return response.status(200).json({
+            ok:true,
+            message:"Token generated successfully!",
+            accessToken:accessToken,
+            refreshToken:refreshToken
+        });
+    }
+    catch(error)
+    {
+        console.log("");
+        return response.status(500).json({
+            ok:false,
+            message:"Internal server issue!",
+            error:error.message
+        })
+    }
+}
+
 module.exports = {
     registration,
     login,
     update,
-    forgetPassword
+    forgetPassword,
+    generateAccessToken
 }

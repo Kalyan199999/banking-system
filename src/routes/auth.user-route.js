@@ -10,7 +10,8 @@ const {
     registration,
     login,
     update,
-    forgetPassword
+    forgetPassword,
+    generateAccessToken
 } = require('../controllers/user.controller.js');
 
 const route = express.Router();
@@ -22,5 +23,7 @@ route.post( '/login' , login );
 route.patch( '/edit' , authentication , upload.single('avatar') , update );
 
 route.patch( '/forget-password' , forgetPassword );
+
+route.get( '/token' , authentication , generateAccessToken);
 
 module.exports = route;
